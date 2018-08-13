@@ -28,7 +28,6 @@ class SimpleHttpClient
                 break;
             default:
                 return false;
-                break;
         }
         if (count($header) >= 1) {
             foreach ($header as $key => &$value) {
@@ -81,14 +80,49 @@ class SimpleHttpClient
 
         $re = array(
             'http_code' => 0,
-            'header'    => '',
-            'data'      => '',
+            'header'    => false,
+            'data'      => false,
         );
-        $re['data']      = curl_exec($ch);
+        $re['data'] = curl_exec($ch);
+        if ($re['data'] === false) {
+            goto close;
+        }
+        $info       = curl_getinfo($ch);
+        // curl_getinfo($ch, CURLINFO_EFFECTIVE_URL); // 1048577
+        // curl_getinfo($ch, CURLINFO_HTTP_CODE); // 2097154
+        // curl_getinfo($ch, CURLINFO_FILETIME); // 2097166
+        // curl_getinfo($ch, CURLINFO_TOTAL_TIME); // 3145731
+        // curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME); // 3145732
+        // curl_getinfo($ch, CURLINFO_CONNECT_TIME); // 3145733
+        // curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME); // 3145734
+        // curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME); // 3145745
+        // curl_getinfo($ch, CURLINFO_REDIRECT_TIME); // 3145747
+        // curl_getinfo($ch, CURLINFO_SIZE_UPLOAD); // 3145735
+        // curl_getinfo($ch, CURLINFO_SIZE_DOWNLOAD); // 3145736
+        // curl_getinfo($ch, CURLINFO_SPEED_DOWNLOAD); // 3145737
+        // curl_getinfo($ch, CURLINFO_SPEED_UPLOAD); // 3145738
+        // curl_getinfo($ch, CURLINFO_HEADER_SIZE); // 2097163
+        // curl_getinfo($ch, CURLINFO_HEADER_OUT); // 2
+        // curl_getinfo($ch, CURLINFO_REQUEST_SIZE); // 2097164
+        // curl_getinfo($ch, CURLINFO_SSL_VERIFYRESULT); // 2097165
+        // curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD); // 3145743
+        // curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_UPLOAD); // 3145744
+        // curl_getinfo($ch, CURLINFO_CONTENT_TYPE); // 1048594
+
         $re['http_code'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $header_size     = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $re['header']    = substr($re['data'], 0, $header_size);
-        $re['data']      = substr($re['data'], $header_size);
+        // $header_size     = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $all_size    = strlen($re['data']);
+        $header_size = strpos($re['data'], "\r\n\r\n");
+        if ($header_size) {
+            $header_size += 4;
+        }
+        $re['header'] = substr($re['data'], 0, $header_size);
+        $re['data']   = substr($re['data'], $header_size);
+        if ($all_size === $header_size) {
+            $re['data'] = '';
+        }
+
+        close:
         curl_close($ch);
         return $re;
     }

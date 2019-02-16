@@ -12,22 +12,22 @@ class SimpleHttpClient
     {
         return self::quickRequest($url, 'POST', $header, $cookie, $data, $options);
     }
-    final private static function quickRequest($url, $method, $header = null, $cookie = '', $data = '', $options = null)
+    public static function quickRequest($url, $method, $header = null, $cookie = '', $data = '', $options = null)
     {
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         switch (strtoupper($method)) {
             case 'GET':
                 //curl_setopt($ch,CURLOPT_HTTPGET,TRUE);
                 break;
-            case 'POST':
-                curl_setopt($ch, CURLOPT_POST, true);
+            default:
+                if ($method === 'POST') {
+                    curl_setopt($ch, CURLOPT_POST, true);
+                }
                 if (!empty($data)) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
                 }
-
                 break;
-            default:
-                return false;
         }
         if (count($header) >= 1) {
             foreach ($header as $key => &$value) {
@@ -87,7 +87,7 @@ class SimpleHttpClient
         if ($re['data'] === false) {
             goto close;
         }
-        $info       = curl_getinfo($ch);
+        $info = curl_getinfo($ch);
         // curl_getinfo($ch, CURLINFO_EFFECTIVE_URL); // 1048577
         // curl_getinfo($ch, CURLINFO_HTTP_CODE); // 2097154
         // curl_getinfo($ch, CURLINFO_FILETIME); // 2097166

@@ -118,7 +118,7 @@ class SimpleHttpClient
         }
         $re['header'] = substr($re['data'], 0, $header_size);
         $re['data']   = substr($re['data'], $header_size);
-        if (strpos(ltrim($re['data']), 'HTTP/') === 0 && strpos(ltrim($re['header']), 'HTTP/') === 0) {
+        if (substr(ltrim($re['data']), 0, 5) === 'HTTP/' && substr(ltrim($re['header']), 0, 5) === 'HTTP/') {
             // double headers
             $response     = ltrim($re['data']);
             $firstLineEnd = strpos($response, "\r\n");

@@ -118,8 +118,27 @@ class SimpleHttpClient
         }
         $re['header'] = substr($re['data'], 0, $header_size);
         $re['data']   = substr($re['data'], $header_size);
-        if ($all_size === $header_size) {
-            $re['data'] = '';
+        if (strpos(ltrim($re['header']), 'HTTP/') === 0) {
+            // double headers
+            $response     = ltrim($re['data']);
+            $firstLineEnd = strpos($response, "\r\n");
+            if (!$firstLineEnd) {
+                $re = array(
+                    'http_code' => 0,
+                    'header'    => false,
+                    'data'      => false,
+                );
+                goto close;
+            }
+            $responseLine            = substr($response, 0, $firstLineEnd);
+            list(, $re['http_code']) = explode(' ', $responseLine);
+            $headerEnd               = strpos($response, "\r\n\r\n", $firstLineEnd);
+            $re['header']            = substr($response, $firstLineEnd + 2, $headerEnd - $firstLineEnd - 2);
+            $re['data']              = substr($response, $headerEnd + 4);
+        } else {
+            if ($all_size === $header_size) {
+                $re['data'] = '';
+            }
         }
 
         close:

@@ -140,6 +140,7 @@ class SimpleHttpClient
                 $re['data'] = '';
             }
         }
+        $re['http_code'] = (int)$re['http_code'];
 
         close:
         curl_close($ch);

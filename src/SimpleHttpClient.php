@@ -4,15 +4,15 @@ namespace liesauer;
 
 class SimpleHttpClient
 {
-    public static function quickGet($url, $header = null, $cookie = '', $data = '', $options = null)
+    public static function quickGet($url, $header = [], $cookie = '', $data = '', $options = [])
     {
         return self::quickRequest($url . (empty($data) ? '' : '?' . $data), 'GET', $header, $cookie, '', $options);
     }
-    public static function quickPost($url, $header = null, $cookie = '', $data = '', $options = null)
+    public static function quickPost($url, $header = [], $cookie = '', $data = '', $options = [])
     {
         return self::quickRequest($url, 'POST', $header, $cookie, $data, $options);
     }
-    public static function quickRequest($url, $method, $header = null, $cookie = '', $data = '', $options = null)
+    public static function quickRequest($url, $method, $header = [], $cookie = '', $data = '', $options = [])
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, strtoupper($method));
@@ -25,6 +25,9 @@ class SimpleHttpClient
                 //     curl_setopt($ch, CURLOPT_POST, true);
                 // }
                 if (!empty($data)) {
+                    if (is_array($data)) {
+                        $data = http_build_query($data);
+                    }
                     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
                 }
                 break;

@@ -21,9 +21,9 @@ class SimpleHttpClient
                 //curl_setopt($ch,CURLOPT_HTTPGET,TRUE);
                 break;
             default:
-                if ($method === 'POST') {
-                    curl_setopt($ch, CURLOPT_POST, true);
-                }
+                // if ($method === 'POST') {
+                //     curl_setopt($ch, CURLOPT_POST, true);
+                // }
                 if (!empty($data)) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
                 }

@@ -370,8 +370,9 @@ class SimpleHttpClient
         $result['http_code'] = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
         $total_size  = strlen($result['data']);
-        $header_size = strpos($result['data'], "\r\n\r\n");
-        if ($header_size !== false) $header_size += 4;
+        $header_size = curl_getinfo($handle, CURLINFO_HEADER_SIZE);
+        // $header_size = strpos($result['data'], "\r\n\r\n");
+        // if ($header_size !== false) $header_size += 4;
 
         $result['header'] = substr($result['data'], 0, $header_size);
         $result['data']   = substr($result['data'], $header_size);
@@ -400,6 +401,21 @@ class SimpleHttpClient
             $result['data']              = substr($data, $headerEnd + 4);
         } else if ($total_size === $header_size) {
             $result['data'] = '';
+        } else {
+            $result['header'] = rtrim($result['header']);
+
+            $pos = strrpos($result['header'], 'HTTP/');
+
+            if ($pos) {
+                $result['header'] = substr($result['header'], $pos);
+
+                $firstLineEnd = strpos($result['header'], "\r\n");
+
+                if ($firstLineEnd) {
+                    $responseLine                = substr($result['header'], 0, $firstLineEnd);
+                    list(, $result['http_code']) = explode(' ', $responseLine);
+                }
+            }
         }
 
         $result['http_code'] = (int)$result['http_code'];
